@@ -3,11 +3,37 @@
 <head>
   <meta charset="UTF-8">
   <title>병원 ykiho 검색기</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    input, button {
+      font-size: 16px;
+      padding: 10px;
+      margin-top: 10px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    pre {
+      background: #f9f9f9;
+      padding: 15px;
+      border: 1px solid #ccc;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
-  <h2>병원이름 → ykiho 검색</h2>
+  <h2>병원이름ㅋ → ykiho 검색</h2>
   <input type="text" id="hospitalName" placeholder="예: 사랑의병원" />
-  <button onclick="searchYkiho()">검색</button>
+  <button onclick="searchYkiho()">검ㅋ색</button>
   <pre id="result"></pre>
 
   <script>
@@ -15,16 +41,23 @@
       const hospName = document.getElementById("hospitalName").value;
       const resultBox = document.getElementById("result");
 
-      if (!hospName) return alert("병원이름을 입력하세요");
+      if (!hospName.trim()) {
+        alert("병원이름을 입력하세요");
+        return;
+      }
+
       resultBox.textContent = "검색 중...";
 
-      const proxyUrl = "https://corsproxy.io/?";
-      const apiUrl = "https://www.hira.or.kr/ra/hosp/getHospSearchList.do";
+      const proxyUrl = "https://api.allorigins.win/raw?url=";
+      const targetUrl = "https://www.hira.or.kr/ra/hosp/getHospSearchList.do";
+      const finalUrl = proxyUrl + encodeURIComponent(targetUrl);
 
       try {
-        const response = await fetch(proxyUrl + apiUrl, {
+        const response = await fetch(finalUrl, {
           method: "POST",
-          headers: { "Content-Type": "application/json;charset=UTF-8" },
+          headers: {
+            "Content-Type": "application/json;charset=UTF-8"
+          },
           body: JSON.stringify({
             pageIndex: 1,
             pageUnit: 10,
@@ -32,18 +65,21 @@
           })
         });
 
+        if (!response.ok) throw new Error("응답 오류");
+
         const data = await response.json();
         if (data.resultCode === "SUCCESS" && data.resultList.length > 0) {
           let output = "";
           data.resultList.forEach(h => {
-            output += `${h.yadmNm} → ykiho: ${h.ykiho}\n`;
+            output += `🏥 ${h.yadmNm} → ykiho: ${h.ykiho}\n`;
           });
           resultBox.textContent = output;
         } else {
-          resultBox.textContent = "검색 결과 없음";
+          resultBox.textContent = "🔍 검색 결과 없음";
         }
+
       } catch (err) {
-        resultBox.textContent = "오류 발생: " + err;
+        resultBox.textContent = "❌ 오류 발생: " + err.message;
       }
     }
   </script>
