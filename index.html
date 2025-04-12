@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>병원 ykiho 검색기</title>
+</head>
+<body>
+  <h2>병원이름 → ykiho 검색</h2>
+  <input type="text" id="hospitalName" placeholder="예: 사랑의병원" />
+  <button onclick="searchYkiho()">검색</button>
+  <pre id="result"></pre>
+
+  <script>
+    async function searchYkiho() {
+      const hospName = document.getElementById("hospitalName").value;
+      const resultBox = document.getElementById("result");
+
+      if (!hospName) return alert("병원이름을 입력하세요");
+      resultBox.textContent = "검색 중...";
+
+      const proxyUrl = "https://corsproxy.io/?";
+      const apiUrl = "https://www.hira.or.kr/ra/hosp/getHospSearchList.do";
+
+      try {
+        const response = await fetch(proxyUrl + apiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json;charset=UTF-8" },
+          body: JSON.stringify({
+            pageIndex: 1,
+            pageUnit: 10,
+            searchKeyword: hospName
+          })
+        });
+
+        const data = await response.json();
+        if (data.resultCode === "SUCCESS" && data.resultList.length > 0) {
+          let output = "";
+          data.resultList.forEach(h => {
+            output += `${h.yadmNm} → ykiho: ${h.ykiho}\n`;
+          });
+          resultBox.textContent = output;
+        } else {
+          resultBox.textContent = "검색 결과 없음";
+        }
+      } catch (err) {
+        resultBox.textContent = "오류 발생: " + err;
+      }
+    }
+  </script>
+</body>
+</html>
